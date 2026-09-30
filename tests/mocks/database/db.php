@@ -109,7 +109,24 @@ class Mock_Database_DB {
 			'DB_forge.php' => '',
 			'DB_query_builder.php' => ''
 		), '', $case->ci_base_root, 'database');
-		if (file_exists(SYSTEM_PATH.'database/drivers/'.$driver.'/'.$driver.'_driver.php'))
+		// CI3: system/database/drivers/<driver>/<driver>_driver.php
+// Kodhe: src/Connection/Drivers/<driver>/... (cek longgar; bila tidak
+// ada, VFS dummy di atas tetap cukup untuk bootstrap driver mock).
+$kodhe_db_drivers = array(
+SYSPATH.'src/Connection/Drivers/'.$driver,
+SYSPATH.'src/Drivers/'.$driver,
+SYSTEM_PATH.'database/drivers/'.$driver,
+);
+$driver_dir = NULL;
+foreach ($kodhe_db_drivers as $candidate)
+{
+if (is_dir($candidate))
+{
+$driver_dir = $candidate;
+break;
+}
+}
+if ($driver_dir !== NULL && file_exists($driver_dir.'/'.$driver.'_driver.php'))
 		{
 			$case->ci_vfs_create(array(
 				$driver.'_driver.php' => '',
@@ -125,7 +142,16 @@ class Mock_Database_DB {
 			), '', $case->ci_base_root, 'database/drivers/'.$driver.'/subdrivers');
 		}
 
-		include_once(SYSTEM_PATH.'database/DB.php');
+		// CI3: function DB() global dari system/database/DB.php.
+// Kodhe: kelas statis Kodhe\Framework\Database\DB — sediakan shim
+// global DB() agar test lama tetap bisa memanggil DB($group, $qb).
+if ( ! function_exists('DB') && class_exists('Kodhe\\Framework\\Database\\DB', FALSE))
+{
+function DB($group = 'default', $query_builder = TRUE)
+{
+return \Kodhe\Framework\Database\Connection\ConnectionManager::connection($group);
+}
+}
 
 		try
 		{

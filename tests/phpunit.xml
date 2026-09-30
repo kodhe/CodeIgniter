@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+Suite unit-test warisan CI3 yang sudah disesuaikan untuk Kodhe Framework.
+Target: PHPUnit >= 9 (lihat composer.json require-dev). Format coverage
+mengikuti skema PHPUnit 9.x (<coverage><include>) — <filter><whitelist>
+milik PHPUnit lama sudah dihapus karena folder system/ tidak ada lagi;
+sumber kode kini hidup di packages/*/src atau vendor/kodhe/*.
+-->
 <phpunit
-	bootstrap="./Bootstrap.php"
-	colors="true"
-	convertNoticesToExceptions="true"
-	convertWarningsToExceptions="true"
-	stopOnError="false"
-	stopOnFailure="false"
-	stopOnIncomplete="false"
-	stopOnSkipped="false"
-	beStrictAboutTestsThatDoNotTestAnything="false">
-	<testsuites>
-		<testsuite name="CodeIgniter Core Test Suite">
-			<directory suffix="test.php">./codeigniter/core</directory>
-			<directory suffix="test.php">./codeigniter/helpers</directory>
-			<directory suffix="test.php">./codeigniter/libraries</directory>
-		</testsuite>
-	</testsuites>
-	<filter>
-		<whitelist>
-			<directory suffix=".php">../system/</directory>
-		</whitelist>
-	</filter>
+bootstrap="./Bootstrap.php"
+colors="true"
+convertNoticesToExceptions="true"
+convertWarningsToExceptions="true"
+stopOnError="false"
+stopOnFailure="false"
+stopOnIncomplete="false"
+stopOnSkipped="false"
+beStrictAboutTestsThatDoNotTestAnything="false"
+cacheResult="false">
+<testsuites>
+<testsuite name="CodeIgniter Core Test Suite">
+<directory suffix="test.php">./codeigniter/core</directory>
+<directory suffix="test.php">./codeigniter/helpers</directory>
+<directory suffix="test.php">./codeigniter/libraries</directory>
+</testsuite>
+</testsuites>
+<coverage includeUncoveredFiles="false">
+<include>
+<directory suffix=".php">../../packages/framework/src</directory>
+</include>
+</coverage>
 </phpunit>

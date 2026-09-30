@@ -152,9 +152,24 @@ class CI_TestCase extends \PHPUnit\Framework\TestCase {
 			throw new Exception('Not a valid core class.');
 		}
 
-		if ( ! class_exists('CI_'.$class_name))
+		if ( ! class_exists('CI_'.$class_name, FALSE))
 		{
-			require_once SYSTEM_PATH.'core/'.$class_name.'.php';
+			// Folder system/core/ CI3 sudah tidak ada; kelas nyata
+			// dimuat lewat composer autoload + aliases.php.
+			include_once dirname(dirname(__FILE__)).'/aliases.php';
+		}
+
+		// Mocks selalu menang bila file mock-nya tersedia, sama seperti
+		// perilaku bootstrap CI3 lama (mis. Mock_Core_Security /
+		// Mock_Core_URI menggantikan CI_Security / CI_URI asli).
+		static $core_mocks = array(
+			'Security' => '/mocks/core/security.php',
+			'Uri'      => '/mocks/core/uri.php',
+		);
+		if (isset($core_mocks[$class_name])
+			&& ! class_exists('Mock_Core_'.$class_name, FALSE))
+		{
+			include_once dirname(dirname(__FILE__)).$core_mocks[$class_name];
 		}
 
 		$GLOBALS[strtoupper($global_name)] = 'CI_'.$class_name;
@@ -349,22 +364,49 @@ class CI_TestCase extends \PHPUnit\Framework\TestCase {
 	 */
 	public function runBare()
 	{
+		self::register_mock_autoloader();
 		self::$ci_test_instance = $this;
 		parent::runBare();
+	}
+
+	/**
+	 * Daftarkan mocks/autoloader.php bila belum ada (idempotent). Dijaga
+	 * static + function_exists agar 'autoload' tidak terdaftar dua kali.
+	 * Bootstrap.php normal sudah memuatnya lebih dulu; ini jaring pengaman
+	 * untuk pemanggilan CI_TestCase::instance() di luar alur bootstrap.
+	 */
+	protected static function register_mock_autoloader()
+	{
+		static $checked = FALSE;
+
+		if ( ! $checked)
+		{
+			$checked = TRUE;
+			if ( ! function_exists('autoload'))
+			{
+				include_once dirname(__FILE__).'/autoloader.php';
+			}
+			if (function_exists('autoload') && ! in_array('autoload', spl_autoload_functions(), TRUE))
+			{
+				spl_autoload_register('autoload');
+			}
+		}
 	}
 
 	// --------------------------------------------------------------------
 
 	public function helper($name)
 	{
-		require_once(SYSTEM_PATH.'helpers/'.$name.'_helper.php');
+		// CI3: system/helpers/  ->  Kodhe: src/Support/Helpers/
+		require_once(CI_HELPER_PATH.$name.'_helper.php');
 	}
 
 	// --------------------------------------------------------------------
 
 	public function lang($name)
 	{
-		require(SYSTEM_PATH.'language/english/'.$name.'_lang.php');
+		// CI3: system/language/english/  ->  Kodhe: Resources/language/english/
+		require(CI_LANGUAGE_PATH.'english/'.$name.'_lang.php');
 		return $lang;
 	}
 

@@ -27,9 +27,9 @@ if [ ${#version_id} -ne 3 ]
 then
 	echo "Invalid version number format"
 	exit 1
-elif [ `grep -c -F --regexp="'$version_number'" system/core/CodeIgniter.php` -ne 1 ]
+elif [ `grep -c -F --regexp="'$version_number'" bootstrap/app.php` -ne 1 ]
 then
-	echo "Provided version number doesn't match in system/core/CodeIgniter.php"
+	echo "Provided version number doesn't match in bootstrap/app.php"
 	exit 1
 elif [ `grep -c -F --regexp="'$version_number'" user_guide_src/source/conf.py` -ne 2 ]
 then
